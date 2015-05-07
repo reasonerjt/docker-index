@@ -1,18 +1,9 @@
 var crypto = require('crypto');
 
 module.exports = function(config, redis, logger) {
-  return {
-    createUser: function (req, res, next) {
-      // Validate against a-z0-9_ regexx
 
-      // Allow for account registrations to be disabled.
-      // See: https://github.com/docker/docker/blob/fefaf6a73db52b6d20774f049d7456e2ba6ff5ca/registry/auth.go#L245
-      if (config.disable_account_registration == true) {
-        res.send(401);
-        return next();
-      }
-
-      redis.get("users:" + req.body.username, function(err, value) {
+  function _createUser(username, password, email, isFromCreate, res, next) {
+      redis.get("users:" + username, function(err, value) {
         if (err) {
           res.send(500, err);
           return next();
@@ -21,16 +12,17 @@ module.exports = function(config, redis, logger) {
         if (value == null) {
           // User Does Not Exist, Create!
           var shasum = crypto.createHash("sha1");
-          shasum.update(req.body.password);
+          shasum.update(password);
           var sha1 = shasum.digest("hex");
           
           var userObj = {};
 
-          userObj.username = req.body.username;
+          userObj.username = username;
           userObj.password = sha1;
-          userObj.email = req.body.email;
-          userObj.permissions = {};
-
+          userObj.email = email;
+          userObj.permissions = {"library":"admin"};
+          namespace = username.split("@")[0]
+          userObj.permissions[namespace] = "admin"
           if (config.private == true || config.disable_new_accounts == true)
             userObj.disabled = true;
 
@@ -51,8 +43,11 @@ module.exports = function(config, redis, logger) {
                 res.send(500, err);
                 return next();
               }
-
-              res.send(201, {message: 'account created successfully'});
+              if (isFromCreate){  
+                res.send(201, {message: 'account created successfully'});
+              } else {
+                res.send(200)
+              }
               return next();
             });
           });
@@ -62,8 +57,19 @@ module.exports = function(config, redis, logger) {
           return next();
         }
       });
+  }
+  return {
+   createUser: function (req, res, next) {
+      // Validate against a-z0-9_ regexx
+
+      // Allow for account registrations to be disabled.
+      // See: https://github.com/docker/docker/blob/fefaf6a73db52b6d20774f049d7456e2ba6ff5ca/registry/auth.go#L245
+      if (config.disable_account_registration == true) {
+        res.send(401);
+        return next();
+      }
+      return _createUser(req.body.username, req.body.password, req.body.email, true, res, next)
     },
-    
     updateUser: function (req, res, next) {
       redis.get("users:" + req.params.username, function(err, value) {
         if (err) {
@@ -93,7 +99,9 @@ module.exports = function(config, redis, logger) {
     },
 
     validateUser: function(req, res, next) {
+      console.log("Enter validateUsers")
       if (!req.headers.authorization) {
+        console.log("no header")
         return res.send(401);
       }
 
@@ -104,15 +112,20 @@ module.exports = function(config, redis, logger) {
         var creds = plain.split(':');
         var username  = creds[0];
         var password  = creds[1];
-
+        console.log("username: " + username + "  password: " +password)
         redis.get("users:" + username, function(err, value) {
           if (err) {
             res.send(500, err);
             return next();
           }
           
+          //create user it's not in redis
+          //TODO: do not store the password in redis
+          if (value == null){
+            console.log("user not exist, create user...")
+            return _createUser(username, password, null, false, res, next)  
+          }
           var user = JSON.parse(value) || {};
-
           var shasum = crypto.createHash("sha1");
           shasum.update(password);
           var sha1 = shasum.digest("hex");
@@ -126,6 +139,7 @@ module.exports = function(config, redis, logger) {
           // Check to make sure the password is valid.
           if (user.password != sha1) {
             // Bad login (https://github.com/docker/docker/blob/fefaf6a73db52b6d20774f049d7456e2ba6ff5ca/registry/auth.go#L233)
+            console.log("password does not match!")
             res.send(401, {message: "bad username and/or password (2)"});
             return next();
           }

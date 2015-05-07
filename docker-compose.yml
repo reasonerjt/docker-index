@@ -1,0 +1,51 @@
+redis:
+  image: redis
+  ports:
+    - 26379:6379
+#  volumes:
+#    - /data/redis:/registry/data
+
+registry:
+  image: registry-v091:latest
+  links:
+    - redis:redis
+  ports:
+    - 5000:5000
+  environment:
+    - DEBUG=true
+    - STANDALONE=false
+    - LOGLEVEL=debug
+    - DISABLE_TOKEN_AUTH=false
+    - SETTINGS_FLAVOR=local
+    - INDEX_ENDPOINT=http://index.private.io:5100
+#  volumes:
+#    - /tmp/registry:/data/registry
+
+index:
+  build: .
+  ports:
+    - 5100:5100
+  environment:
+    - REGISTRY_PROTOCOL=http
+    - NODE_TLS_REJECT_UNAUTHORIZED=0
+    - REGISTRIES=registry.private.io:5000
+    - DISABLE_NEW_ACCOUNTS=true
+    - NODE_ENV=docker
+    - LOG_LEVEL=debug
+  links:
+    - redis:redis
+
+nginx:
+  image: h3nrik/nginx-ldap:latest
+#  environment:
+#    - INDEX_HOSTNAME=index.private.io
+#    - REGISTRY_HOSTNAME=registry.private.io
+  ports:
+    - 80:80
+    - 443:443
+  links:
+    - registry:registry
+    - index:index
+#ask me for the nging conf --jt
+  volumes:
+    - /tmp/nginx:/etc/nginx:ro

@@ -35,7 +35,7 @@ var server = restify.createServer({
 
 // Catch unhandled exceptions and log it!
 server.on('uncaughtException', function (req, res, route, err) {
-  logger.error({err: err}, 'uncaughtException');
+  logger.error({err: err, stack: err.stack}, 'uncaughtException');
 });
 
 // Basic Restify Middleware
