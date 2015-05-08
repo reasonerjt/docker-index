@@ -5,10 +5,18 @@ redis:
 #  volumes:
 #    - /data/redis:/registry/data
 
+mysql:
+  environment:
+    MYSQL_ROOT_PASSWORD: mysql
+    MYSQL_DATABASE: registry
+  image: "mysql:latest"
+  restart: always
+
 registry:
   image: registry-v091:latest
   links:
     - redis:redis
+    - mysql:mysql
   ports:
     - 5000:5000
   environment:
@@ -18,6 +26,9 @@ registry:
     - DISABLE_TOKEN_AUTH=false
     - SETTINGS_FLAVOR=local
     - INDEX_ENDPOINT=http://index.private.io:5100
+    - SEARCH_BACKEND=sqlalchemy
+    - SQLALCHEMY_INDEX_DATABASE="mysql://root:mysql@mysql:3306/registry"
+    - STORAGE_PATH=/var/docker-registry-storage
 #  volumes:
 #    - /tmp/registry:/data/registry
 
