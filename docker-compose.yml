@@ -6,17 +6,22 @@ redis:
 #    - /data/redis:/registry/data
 
 registry:
-  image: registry-v091:latest
+  image: pallet/registry-swift
   links:
     - redis:redis
   ports:
     - 5000:5000
   environment:
+    - OS_CONTAINER=mustang
+    - OS_USERNAME=mustang
+    - OS_PASSWORD=mustang
+    - OS_AUTH_URL=http://9.112.227.201:5000/v2.0
+    - OS_TENANT_NAME=mustang
     - DEBUG=true
     - STANDALONE=false
     - LOGLEVEL=debug
     - DISABLE_TOKEN_AUTH=false
-    - SETTINGS_FLAVOR=local
+    - SETTINGS_FLAVOR=swift
     - INDEX_ENDPOINT=http://index.private.io:5100
 #  volumes:
 #    - /tmp/registry:/data/registry
@@ -48,4 +53,5 @@ nginx:
     - index:index
 #ask me for the nging conf --jt
   volumes:
-    - /tmp/nginx:/etc/nginx:ro
+    - ./nginx:/etc/nginx:ro
+
