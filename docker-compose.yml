@@ -20,11 +20,12 @@ registry:
   ports:
     - 5000:5000
   environment:
-    - OS_CONTAINER=mustang
-    - OS_USERNAME=mustang
-    - OS_PASSWORD=mustang
-    - OS_AUTH_URL=http://9.112.227.201:5000/v2.0
-    - OS_TENANT_NAME=mustang
+#Refer to wiki for confidential information
+    #- OS_CONTAINER=######
+    #- OS_USERNAME=#####
+    #- OS_PASSWORD=#####
+    #- OS_AUTH_URL=#####
+    #- OS_TENANT_NAME=#####
     - DEBUG=true
     - STANDALONE=false
     - LOGLEVEL=debug
