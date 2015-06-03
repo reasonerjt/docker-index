@@ -17,7 +17,7 @@ registry:
     - LOGLEVEL=debug
     - DISABLE_TOKEN_AUTH=false
     - SETTINGS_FLAVOR=local
-    - INDEX_ENDPOINT=https://index.private.io
+    - INDEX_ENDPOINT=http://index.private.io
 #  volumes:
 #    - /tmp/registry:/data/registry
 

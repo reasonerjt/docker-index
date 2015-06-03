@@ -13,7 +13,7 @@ mysql:
   restart: always
 
 registry:
-  image: pallet/registry-swift
+  build: ./registry_img
   links:
     - redis:redis
     - mysql:mysql
@@ -33,8 +33,9 @@ registry:
     - SETTINGS_FLAVOR=swift
     - INDEX_ENDPOINT=http://index.private.io:5100
     - SEARCH_BACKEND=sqlalchemy
-    - SQLALCHEMY_INDEX_DATABASE="mysql://root:mysql@mysql:3306/registry"
+    - SQLALCHEMY_INDEX_DATABASE=mysql://root:mysql@mysql:3306/registry
     - STORAGE_PATH=/var/docker-registry-storage
+    #- GUNICORN_OPTS=["--preload"]
 #  volumes:
 #    - /tmp/registry:/data/registry
 
