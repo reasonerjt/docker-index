@@ -38,7 +38,7 @@ module.exports = function(config, redis, logger) {
 
           if (value == null) {
             logger.debug({permission: req.permission, user: user, statusCode: 403, message: 'access denied: user not found'});
-            res.send(403, 'access denied (1)')
+            res.send(403, 'access denied user not found')
             return next();
           }
         
@@ -47,7 +47,7 @@ module.exports = function(config, redis, logger) {
           // If the account is disabled, do not let it do anything at all
           if (value.disabled == true || value.disabled == "true") {
             logger.debug({message: "account is disabled", user: value.username});
-            res.send(401, {message: "access denied (2)"})
+            res.send(401, {message: "access denied account is disabled"})
             return next();
           }
 
@@ -58,6 +58,13 @@ module.exports = function(config, redis, logger) {
               return next();
             }
 
+            // TODO: Better handling for non repo images urls
+            var rePattern = new RegExp('/group/*');                                                                                                              
+            if (rePattern.test(req.url)) {                                                                                                                       
+              console.log("reg group result " + rePattern.test(req.url));                                                                                        
+              return next();                                                                                                                                     
+            }       
+
             var repo = req.params.namespace + '/' + req.params.repo;
 
             req.username = user;
@@ -66,6 +73,18 @@ module.exports = function(config, redis, logger) {
 
             // Check for repo permissions
             req.permission = value.permissions[req.namespace] || value.permissions[req.repo] || 'none';
+
+            /*this code will search group for user
+            if (req.permission == "none") {
+              var groups = value.groups;
+              for (var key in groups) {
+                if (key == req.namespace) {
+                  req.permission = groups[key];
+                  break;
+                }
+              }
+            }
+            */
 
             if (req.permission == "none") {
               logger.debug({req: req, permission: req.permission, statusCode: 403, message: 'access denied: permission not set'});
