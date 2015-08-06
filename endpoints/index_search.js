@@ -1,6 +1,7 @@
 // TODO: implement
 
 module.exports = function(config, redis, logger) {
+  var index_search = require('../index/search.js')(config, redis, logger);
 
   var endpoints = {
     name: 'Index Search',
@@ -14,10 +15,7 @@ module.exports = function(config, redis, logger) {
         auth: false,
         path: '/v1/search',
         version: '1.0.0',
-        fn: function(req, res, next) {
-          res.send(501);
-          return next();
-        }
+        fn: index_search.search
       },
 
     ]
