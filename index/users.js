@@ -21,8 +21,12 @@ module.exports = function(config, redis, logger) {
           userObj.password = sha1;
           userObj.email = email;
           userObj.permissions = {"library":"admin"};
-          namespace = username.split("@")[0]
-          userObj.permissions[namespace] = "admin"
+          namespace = username.split("@")[0];
+          userObj.permissions[namespace] = "admin";
+
+          //set user groups
+         // userObj.groups = {"bird":"admin","fly":"read"};
+          
           if (config.private == true || config.disable_new_accounts == true)
             userObj.disabled = true;
 
