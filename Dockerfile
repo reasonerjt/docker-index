@@ -12,6 +12,7 @@ WORKDIR /opt/app
 
 ADD package.json /tmp/package.json
 RUN cd /tmp && npm install --production && cp -R node_modules /opt/app
+RUN npm install wait.for
 
 ADD . /opt/app
 
