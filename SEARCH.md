@@ -8,6 +8,6 @@ You can visit registry.cdl.ibm.com/v1/search by brower to see the results.The re
 
 You can attach some parameters to filter some results.
 
-    ```registry.cdl.ibm.com/v1/search?q=ubuntu
+    registry.cdl.ibm.com/v1/search?q=ubuntu
 
 Then you can see the results contain ubuntu string
